@@ -9,6 +9,9 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.shortcuts import redirect, get_object_or_404, render
 
+from .tasks import mail_new
+
+
 class NewsList(ListView):
     model = Post
     ordering = '-time_in'
@@ -42,24 +45,7 @@ class NewsCreate(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         post = form.save(commit=False)
         post.neworart = False
 
-        html_content = render_to_string(
-            'news/post_created.html',
-            {
-                'post': post,
-                'text': post.preview,
-                'link': f'http://127.0.0.1:8000/news/{post.pk}',
-            }
-        )
-
-        msg = EmailMultiAlternatives(
-            subject=f'{post.title}',
-            body=post.text,
-            from_email='Tailingen1@yandex.ru',
-            to=['Tailingen@mail.ru'],
-        )
-        msg.attach_alternative(html_content, "text/html")
-
-        msg.send()
+        mail_new.apply_async(countdown = 5)
 
         return super().form_valid(form)
 

@@ -11,7 +11,7 @@ app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
     'clear_mail_every_week': {
-        'task': 'news.tasks.hello',
-        'schedule': crontab(),
+        'task': 'news.tasks.mail_spam',
+        'schedule': crontab(hour=8, minute=0, day_of_week='monday'),
     },
 }
